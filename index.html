@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Be My Valentine?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #ffe6e6 0%, #ffcba4 100%);
+            overflow: hidden;
+            font-family: 'Pacifico', cursive;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        /* Floating Hearts Background */
+        .bg-heart {
+            position: absolute;
+            color: rgba(255, 0, 0, 0.1);
+            font-size: 2rem;
+            z-index: -1;
+            animation: float 6s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            color: #d32f2f;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+            z-index: 10;
+            pointer-events: none; /* Let clicks pass through text */
+        }
+
+        .buttons {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        button {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2rem;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        #yesBtn {
+            background-color: #ff4081;
+            color: white;
+            font-weight: bold;
+            transition: transform 0.2s;
+            z-index: 20;
+        }
+
+        #yesBtn:hover {
+            transform: scale(1.1);
+            background-color: #f50057;
+        }
+
+        #noBtn {
+            background-color: #ffffff;
+            color: #555;
+            position: absolute; /* Allows free movement */
+            transition: top 0.3s ease, left 0.3s ease; /* Makes it glide like tag */
+            z-index: 15;
+        }
+
+        /* Fireworks Canvas */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 99;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #message {
+            display: none;
+            font-size: 4rem;
+            color: #d32f2f;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div style="position:absolute; width:100%; height:100%; overflow:hidden; pointer-events:none;">
+        <div class="bg-heart" style="top:10%; left:20%">❤️</div>
+        <div class="bg-heart" style="top:30%; left:80%; animation-delay: 1s">💖</div>
+        <div class="bg-heart" style="top:70%; left:10%; animation-delay: 2s">❤️</div>
+        <div class="bg-heart" style="top:60%; left:85%; animation-delay: 0.5s">💖</div>
+        <div class="bg-heart" style="top:50%; left:50%; animation-delay: 1.5s">❤️</div>
+    </div>
+
+    <div id="main-content">
+        <h1>Will you be my Valentine? 🌹</h1>
+        <div class="buttons">
+            <button id="yesBtn">YES! 😍</button>
+        </div>
+        <button id="noBtn">No 😢</button>
+    </div>
+
+    <div id="message">YAY! ❤️ I LOVE YOU!</div>
+    <canvas id="fireworks"></canvas>
+
+    <script>
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const mainContent = document.getElementById('main-content');
+        const message = document.getElementById('message');
+        const canvas = document.getElementById('fireworks');
+        const ctx = canvas.getContext('2d');
+
+        // Initial setup for No button position (next to Yes button)
+        // We do this to ensure it starts in a logical place before running away
+        function centerNoButton() {
+            const rect = yesBtn.getBoundingClientRect();
+            noBtn.style.left = rect.right + 20 + 'px';
+            noBtn.style.top = rect.top + 'px';
+        }
+        
+        // Run once on load
+        window.onload = centerNoButton;
+
+        // --- THE "TAG" LOGIC ---
+        function moveButton() {
+            // Get viewport dimensions
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const btnWidth = noBtn.offsetWidth;
+            const btnHeight = noBtn.offsetHeight;
+
+            // Calculate new random position
+            // We ensure it stays within the screen padding
+            const newX = Math.random() * (width - btnWidth - 100) + 50;
+            const newY = Math.random() * (height - btnHeight - 100) + 50;
+
+            noBtn.style.left = `${newX}px`;
+            noBtn.style.top = `${newY}px`;
+        }
+
+        // Mouse Proximity Detector
+        document.addEventListener('mousemove', (e) => {
+            const btnRect = noBtn.getBoundingClientRect();
+            const btnCenterX = btnRect.left + btnRect.width / 2;
+            const btnCenterY = btnRect.top + btnRect.height / 2;
+
+            // Calculate distance between mouse and button center
+            const distance = Math.hypot(e.clientX - btnCenterX, e.clientY - btnCenterY);
+
+            // If mouse is within 150px (The "Danger Zone"), move the button
+            if (distance < 150) {
+                moveButton();
+            }
+        });
+
+        // Fallback for mobile (touch) or fast clicks
+        noBtn.addEventListener('click', moveButton);
+        noBtn.addEventListener('mouseover', moveButton);
+
+        // --- THE "YES" BUTTON LOGIC ---
+        yesBtn.addEventListener('click', () => {
+            mainContent.classList.add('hidden');
+            noBtn.style.display = 'none'; // Hide the runner
+            message.style.display = 'block';
+            startFireworks();
+        });
+
+        // --- FIREWORKS LOGIC ---
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function createParticle(x, y) {
+            const particleCount = 100;
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                    velocity: {
+                        x: (Math.random() - 0.5) * 15,
+                        y: (Math.random() - 0.5) * 15
+                    },
+                    alpha: 1,
+                    size: Math.random() * 4 + 1
+                });
+            }
+        }
+
+        function animate() {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.globalCompositeOperation = 'lighter';
+
+            particles.forEach((p, index) => {
+                p.velocity.y += 0.05;
+                p.x += p.velocity.x;
+                p.y += p.velocity.y;
+                p.alpha -= 0.01;
+
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.alpha;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (p.alpha <= 0) {
+                    particles.splice(index, 1);
+                }
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        function startFireworks() {
+            animate();
+            setInterval(() => {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height / 2;
+                createParticle(x, y);
+            }, 800);
+            createParticle(window.innerWidth / 2, window.innerHeight / 2);
+        }
+    </script>
+</body>
+</html>
